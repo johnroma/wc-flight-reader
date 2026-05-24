@@ -21,8 +21,8 @@ export class FlightReader extends LitElement {
   @property({ type: String }) model = ""
   @property({ type: String, attribute: "proxy-url" }) proxyUrl = ""
 
-  // Not a @property — never reflected to DOM attribute
-  apiKey = ""
+  // attribute: false — reactive but never reflected to DOM attribute
+  @property({ type: String, attribute: false }) apiKey = ""
 
   @state() private _status: Status = "idle"
   @state() private _count = 0
@@ -47,11 +47,11 @@ export class FlightReader extends LitElement {
 
   private _buildAdapter() {
     const model = this._resolvedModel()
-    const key = this.apiKey || "proxy"
+    const key = this.apiKey
 
     if (this.provider === "openai") {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      return createOpenaiChat(model as any, key, this.proxyUrl ? { baseURL: this.proxyUrl } : undefined)
+      return createOpenaiChat(model as any, key, { dangerouslyAllowBrowser: true, ...(this.proxyUrl ? { baseURL: this.proxyUrl } : {}) })
     }
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -88,7 +88,14 @@ export class FlightReader extends LitElement {
         }),
       )
     } catch (err) {
-      this._error = err instanceof Error ? err.message : "Analysis failed."
+      const raw = err instanceof Error ? err.message : "Analysis failed."
+      // Strip verbose JSON API error bodies — show first meaningful sentence only
+      try {
+        const parsed = JSON.parse(raw)
+        this._error = parsed?.error?.message ?? raw
+      } catch {
+        this._error = raw.split("\n")[0]?.slice(0, 120) ?? raw
+      }
       this._status = "error"
     }
   }
