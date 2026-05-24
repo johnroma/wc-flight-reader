@@ -1,7 +1,7 @@
 {
   "name": "wc-flight-reader",
   "private": false,
-  "version": "0.1.6",
+  "version": "0.2.0",
   "description": "Drop a flight screenshot — get structured itinerary data back.",
   "author": {
     "name": "John Romani",
@@ -30,20 +30,29 @@
       "types": "./types/index.d.ts",
       "default": "./dist/wc-flight-reader.js"
     },
+    "./code-mode": {
+      "types": "./types/code-mode.d.ts",
+      "default": "./dist/code-mode.js"
+    },
     "./types": "./types/index.d.ts"
   },
   "scripts": {
     "dev": "vite",
     "build": "tsc && vite build",
-    "preview": "vite preview"
+    "preview": "vite preview",
+    "demo": "node demo/server.mjs"
   },
   "devDependencies": {
     "@tanstack/ai": "^0.21.3",
-    "@tanstack/ai-gemini": "^0.10.5",
+    "@tanstack/ai-code-mode": "^0.1.20",
+    "@tanstack/ai-code-mode-skills": "^0.1.20",
+    "@tanstack/ai-gemini": "^0.10.10",
+    "@tanstack/ai-isolate-quickjs": "^0.1.20",
     "@tanstack/ai-openai": "^0.10.0",
-    "lit": "^3.1.0",
-    "typescript": "^5.2.2",
-    "vite": "^5.0.8"
+    "lit": "^3.3.3",
+    "typescript": "^6.0.3",
+    "vite": "^8.0.14",
+    "zod": "^4.4.3"
   },
   "peerDependencies": {
     "lit": "^3.0.0"

@@ -1,0 +1,117 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>wc-flight-reader — demo</title>
+    <style>
+      *, *::before, *::after { box-sizing: border-box; }
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 640px;
+        margin: 60px auto;
+        padding: 0 24px;
+        background: #f8fafc;
+        color: #1e293b;
+      }
+      h1 { font-size: 1.25rem; margin-bottom: 4px; }
+      .subtitle { font-size: 0.875rem; color: #64748b; margin: 0 0 28px; }
+      label { font-size: 0.8rem; font-weight: 600; color: #475569; display: block; margin-bottom: 4px; }
+      select, input[type="text"] {
+        width: 100%;
+        padding: 7px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        margin-bottom: 16px;
+        background: #fff;
+      }
+      .key-row { position: relative; }
+      .key-row input { padding-right: 70px; }
+      .key-tag {
+        position: absolute; right: 8px; top: 7px;
+        font-size: 0.7rem; background: #f1f5f9; color: #64748b;
+        padding: 2px 6px; border-radius: 4px;
+      }
+      flight-reader { margin: 4px 0 24px; display: block; }
+      pre {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        min-height: 60px;
+      }
+      .section { margin-bottom: 20px; }
+      .badge {
+        display: inline-block; font-size: 0.65rem; font-weight: 700;
+        padding: 2px 6px; border-radius: 4px; vertical-align: middle;
+        margin-left: 6px;
+      }
+      .badge-env { background: #dcfce7; color: #166534; }
+      .badge-manual { background: #fef9c3; color: #713f12; }
+    </style>
+  </head>
+  <body>
+    <h1>flight-reader</h1>
+    <p class="subtitle">Production demo — serving <code>dist/wc-flight-reader.js</code></p>
+
+    <div class="section">
+      <label for="provider">Provider</label>
+      <select id="provider">
+        <option value="gemini">Gemini</option>
+        <option value="openai">OpenAI</option>
+      </select>
+    </div>
+
+    <div class="section key-row">
+      <label for="apikey">API Key <span id="key-badge" class="badge badge-env">.env</span></label>
+      <input type="text" id="apikey" placeholder="Overriding key…" autocomplete="off" />
+    </div>
+
+    <flight-reader id="reader" provider="gemini"></flight-reader>
+
+    <label>Extracted data</label>
+    <pre id="output">Drop, click or paste a flight screenshot above.</pre>
+
+    <script type="module">
+      import "/dist/wc-flight-reader.js"
+
+      const reader = document.getElementById("reader")
+      const output = document.getElementById("output")
+      const providerSelect = document.getElementById("provider")
+      const apikeyInput = document.getElementById("apikey")
+      const keyBadge = document.getElementById("key-badge")
+
+      // Key injected server-side from .env
+      const envKey = window.__DEMO_KEY__ || ""
+
+      if (envKey) {
+        reader.apiKey = envKey
+        reader.geminiModel = window.__DEMO_GEMINI_MODEL__ || "gemini-3.1-flash-lite"
+        reader.openaiModel = window.__DEMO_OPENAI_MODEL__ || "gpt-5-nano"
+      } else {
+        keyBadge.textContent = "manual"
+        keyBadge.className = "badge badge-manual"
+        apikeyInput.placeholder = "Paste your API key…"
+      }
+
+      providerSelect.addEventListener("change", () => {
+        reader.provider = providerSelect.value
+      })
+
+      apikeyInput.addEventListener("input", () => {
+        const v = apikeyInput.value.trim()
+        reader.apiKey = v || envKey
+        keyBadge.textContent = v ? "manual" : ".env"
+        keyBadge.className = "badge " + (v ? "badge-manual" : "badge-env")
+      })
+
+      reader.addEventListener("flight-data", (e) => {
+        output.textContent = JSON.stringify(e.detail, null, 2)
+      })
+    </script>
+  </body>
+</html>
