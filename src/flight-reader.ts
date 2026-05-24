@@ -9,7 +9,7 @@ type Provider = "gemini" | "openai"
 type Status = "idle" | "loading" | "done" | "error"
 
 const DEFAULT_MODELS: Record<Provider, string> = {
-  gemini: "gemini-2.0-flash",
+  gemini: "gemini-3.1-flash-lite",
   openai: "gpt-4o-mini",
 }
 
@@ -19,6 +19,8 @@ const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"]
 export class FlightReader extends LitElement {
   @property({ type: String }) provider: Provider = "gemini"
   @property({ type: String }) model = ""
+  @property({ type: String, attribute: "gemini-model" }) geminiModel = DEFAULT_MODELS.gemini
+  @property({ type: String, attribute: "openai-model" }) openaiModel = DEFAULT_MODELS.openai
   @property({ type: String, attribute: "proxy-url" }) proxyUrl = ""
 
   // attribute: false — reactive but never reflected to DOM attribute
@@ -42,7 +44,8 @@ export class FlightReader extends LitElement {
   }
 
   private _resolvedModel(): string {
-    return this.model || DEFAULT_MODELS[this.provider] || DEFAULT_MODELS.gemini
+    if (this.model) return this.model
+    return this.provider === "openai" ? this.openaiModel : this.geminiModel
   }
 
   private _buildAdapter() {

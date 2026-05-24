@@ -51,12 +51,14 @@ useEffect(() => {
 
 ## Properties
 
-| Property   | Attribute   | Type                  | Default              | Description                                              |
-|------------|-------------|----------------------|----------------------|----------------------------------------------------------|
-| `provider` | `provider`  | `"gemini" \| "openai"` | `"gemini"`           | Which AI provider to use                                 |
-| `apiKey`   | —           | `string`             | `""`                 | API key — set as a JS property, not an HTML attribute    |
-| `model`    | `model`     | `string`             | `"gemini-2.0-flash"` / `"gpt-4o-mini"` | Override the default model for the selected provider |
-| `proxyUrl` | `proxy-url` | `string`             | `""`                 | Optional base URL for proxying AI requests               |
+| Property      | Attribute      | Type                    | Default                  | Description                                                      |
+|---------------|----------------|------------------------|--------------------------|------------------------------------------------------------------|
+| `provider`    | `provider`     | `"gemini" \| "openai"` | `"gemini"`               | Which AI provider to use                                         |
+| `apiKey`      | —              | `string`               | `""`                     | API key — set as a JS property, not an HTML attribute            |
+| `geminiModel` | `gemini-model` | `string`               | `"gemini-3.1-flash-lite"` | Gemini model to use                                             |
+| `openaiModel` | `openai-model` | `string`               | `"gpt-4o-mini"`          | OpenAI model to use                                              |
+| `model`       | `model`        | `string`               | `""`                     | Override both provider models at once (takes precedence)         |
+| `proxyUrl`    | `proxy-url`    | `string`               | `""`                     | Optional base URL for proxying AI requests                       |
 
 > **Note:** `apiKey` is intentionally not reflected as an HTML attribute to avoid it appearing in the DOM. Always set it via JavaScript: `el.apiKey = key`.
 
