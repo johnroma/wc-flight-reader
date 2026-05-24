@@ -15,9 +15,9 @@
     "gemini",
     "openai"
   ],
-  "homepage": "https://github.com/sodium-elon/wc-flight-reader",
+  "homepage": "https://github.com/johnroma/wc-flight-reader",
   "type": "module",
-  "repository": "https://github.com/sodium-elon/wc-flight-reader",
+  "repository": "https://github.com/johnroma/wc-flight-reader",
   "license": "MIT",
   "files": [
     "dist",
