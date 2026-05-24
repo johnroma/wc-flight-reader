@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>wc-flight-reader — dev</title>
+    <style>
+      body {
+        font-family: system-ui, sans-serif;
+        max-width: 600px;
+        margin: 60px auto;
+        padding: 0 20px;
+        background: #f8fafc;
+        color: #1e293b;
+      }
+      h1 { font-size: 1.25rem; margin-bottom: 4px; }
+      p { font-size: 0.875rem; color: #64748b; margin-bottom: 24px; }
+      pre {
+        background: #1e293b;
+        color: #e2e8f0;
+        padding: 16px;
+        border-radius: 8px;
+        font-size: 0.8rem;
+        overflow-x: auto;
+        white-space: pre-wrap;
+        min-height: 40px;
+      }
+      label { font-size: 0.875rem; font-weight: 500; }
+      select, input[type=text] {
+        display: block;
+        margin: 6px 0 16px;
+        padding: 6px 10px;
+        border: 1px solid #cbd5e1;
+        border-radius: 6px;
+        font-size: 0.875rem;
+        width: 100%;
+        box-sizing: border-box;
+      }
+    </style>
+  </head>
+  <body>
+    <h1>flight-reader</h1>
+    <p>Drop, click or paste a flight screenshot. API key stays in JS memory — never in the DOM.</p>
+
+    <label for="provider">Provider</label>
+    <select id="provider">
+      <option value="gemini">Gemini (gemini-2.0-flash)</option>
+      <option value="openai">OpenAI (gpt-4o-mini)</option>
+    </select>
+
+    <label for="apikey">API Key</label>
+    <input type="text" id="apikey" placeholder="Paste your key here (dev only)" />
+
+    <flight-reader id="reader" provider="gemini"></flight-reader>
+
+    <p style="margin-top:24px">Result:</p>
+    <pre id="output">—</pre>
+
+    <script type="module" src="/src/index.ts"></script>
+    <script>
+      const reader = document.getElementById('reader')
+      const output = document.getElementById('output')
+      const providerSelect = document.getElementById('provider')
+      const apikeyInput = document.getElementById('apikey')
+
+      providerSelect.addEventListener('change', () => {
+        reader.provider = providerSelect.value
+      })
+
+      apikeyInput.addEventListener('input', () => {
+        reader.apiKey = apikeyInput.value.trim()
+      })
+
+      reader.addEventListener('flight-data', (e) => {
+        output.textContent = JSON.stringify(e.detail, null, 2)
+      })
+    </script>
+  </body>
+</html>
