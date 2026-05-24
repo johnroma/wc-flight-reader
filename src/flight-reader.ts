@@ -50,7 +50,8 @@ export class FlightReader extends LitElement {
 
   private _buildAdapter() {
     const model = this._resolvedModel()
-    const key = this.apiKey
+    // In proxy mode the real key is added server-side; SDKs reject empty string so use a placeholder
+    const key = this.apiKey || (this.proxyUrl ? 'proxy' : '')
 
     if (this.provider === "openai") {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
