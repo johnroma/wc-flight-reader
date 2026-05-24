@@ -1,6 +1,6 @@
 import { InternalLogger, resolveDebugOption } from "@tanstack/ai/adapter-internals"
 import {
-  EXTRACT_PROMPT,
+  buildExtractPrompt,
   FLIGHT_DATA_SCHEMA,
   type FlightDataOutput,
   type FlightItinerary,
@@ -19,6 +19,7 @@ export async function analyzeFlightImage(
   base64: string,
   mimeType: string,
   adapter: StructuredAdapter,
+  today: string = new Date().toISOString().slice(0, 10),
 ): Promise<FlightItinerary[]> {
   const result = await adapter.structuredOutput({
     chatOptions: {
@@ -30,7 +31,7 @@ export async function analyzeFlightImage(
           content: [
             {
               type: "text",
-              content: EXTRACT_PROMPT,
+              content: buildExtractPrompt(today),
             },
             {
               type: "image",
