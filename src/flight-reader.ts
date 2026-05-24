@@ -10,7 +10,7 @@ type Status = "idle" | "loading" | "done" | "error"
 
 const DEFAULT_MODELS: Record<Provider, string> = {
   gemini: "gemini-3.1-flash-lite",
-  openai: "gpt-4o-mini",
+  openai: "gpt-5-nano",
 }
 
 const ACCEPTED_MIME_TYPES = ["image/png", "image/jpeg", "image/webp"]

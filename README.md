@@ -56,7 +56,7 @@ useEffect(() => {
 | `provider`    | `provider`     | `"gemini" \| "openai"` | `"gemini"`               | Which AI provider to use                                         |
 | `apiKey`      | —              | `string`               | `""`                     | API key — set as a JS property, not an HTML attribute            |
 | `geminiModel` | `gemini-model` | `string`               | `"gemini-3.1-flash-lite"` | Gemini model to use                                             |
-| `openaiModel` | `openai-model` | `string`               | `"gpt-4o-mini"`          | OpenAI model to use                                              |
+| `openaiModel` | `openai-model` | `string`               | `"gpt-5-nano"`           | OpenAI model to use                                              |
 | `model`       | `model`        | `string`               | `""`                     | Override both provider models at once (takes precedence)         |
 | `proxyUrl`    | `proxy-url`    | `string`               | `""`                     | Optional base URL for proxying AI requests                       |
 
