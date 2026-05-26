@@ -45,5 +45,20 @@ export async function analyzeFlightImage(
   })
 
   const data = result.data as FlightDataOutput
-  return data.itineraries ?? []
+  return (data.itineraries ?? []).map(validateRoundTrip)
+}
+
+// If the final inbound destination doesn't match the first outbound origin,
+// the traveller never returns home — treat it as one-way.
+function validateRoundTrip(itinerary: FlightItinerary): FlightItinerary {
+  if (!itinerary.inbound || itinerary.inbound.length === 0) return itinerary
+
+  const firstOutboundOrigin = itinerary.outbound[0]?.origin
+  const lastInboundDestination = itinerary.inbound[itinerary.inbound.length - 1]?.destination
+
+  if (!firstOutboundOrigin || firstOutboundOrigin !== lastInboundDestination) {
+    return { ...itinerary, inbound: null }
+  }
+
+  return itinerary
 }
