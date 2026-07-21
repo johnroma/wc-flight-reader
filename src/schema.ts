@@ -41,10 +41,10 @@ export const FLIGHT_DATA_SCHEMA = {
       items: {
         type: "object",
         properties: {
-          price: { type: "number", nullable: true },
-          currency: { type: "string", nullable: true },
+          price: { type: ["number", "null"] },
+          currency: { type: ["string", "null"] },
           outbound: { type: "array", items: SEGMENT_SCHEMA },
-          inbound: { type: "array", nullable: true, items: SEGMENT_SCHEMA },
+          inbound: { type: ["array", "null"], items: SEGMENT_SCHEMA },
         },
         required: ["price", "currency", "outbound", "inbound"],
       },
@@ -65,6 +65,8 @@ IMPORTANT: Never mix outbound and inbound legs into the same array. A connection
 For each option also return:
 - price: total numeric price shown for this option (null if not visible)
 - currency: 3-letter ISO 4217 code e.g. "USD", "EUR", "SEK" (null if not visible)
+
+Never invent a price, currency, airport, flight number, date, or time. A blank, cropped, or absent value must be null — never use 0, an empty string, or a plausible guess. Use inbound: null (not an empty array) when a return journey is not shown.
 
 Each flight leg has:
 - flightNumber: carrier code + number e.g. "SK945", "AA123"

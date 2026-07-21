@@ -2,13 +2,13 @@ import { LitElement, html, css } from "lit"
 import { customElement, property, state } from "lit/decorators.js"
 import { createGeminiChat } from "@tanstack/ai-gemini"
 import { createOpenaiChat } from "@tanstack/ai-openai"
-import { analyzeFlightImage } from "./analyze.js"
+import { analyzeFlightImage, analyzeSubscriptionFlightImage } from "./analyze.js"
 import type { FlightItinerary } from "./schema.js"
 
-type Provider = "gemini" | "openai"
+type Provider = "gemini" | "openai" | "subscription"
 type Status = "idle" | "loading" | "done" | "error"
 
-const DEFAULT_MODELS: Record<Provider, string> = {
+const DEFAULT_MODELS: Record<Exclude<Provider, "subscription">, string> = {
   gemini: "gemini-3.1-flash-lite",
   openai: "gpt-5-nano",
 }
@@ -22,8 +22,10 @@ export class FlightReader extends LitElement {
   @property({ type: String, attribute: "gemini-model" }) geminiModel = DEFAULT_MODELS.gemini
   @property({ type: String, attribute: "openai-model" }) openaiModel = DEFAULT_MODELS.openai
   @property({ type: String, attribute: "proxy-url" }) proxyUrl = ""
+  @property({ type: String, attribute: "subscription-url" }) subscriptionUrl = ""
 
-  // attribute: false — reactive but never reflected to DOM attribute
+  // attribute: false — reactive but never reflected to DOM attribute. For the
+  // subscription provider this is the optional service Bearer token.
   @property({ type: String, attribute: false }) apiKey = ""
 
   @state() private _status: Status = "idle"
@@ -50,8 +52,8 @@ export class FlightReader extends LitElement {
 
   private _buildAdapter() {
     const model = this._resolvedModel()
-    // In proxy mode the real key is added server-side; SDKs reject empty string so use a placeholder
-    const key = this.apiKey || (this.proxyUrl ? 'proxy' : '')
+    // In proxy mode the real key is added server-side; SDKs reject empty string so use a placeholder.
+    const key = this.apiKey || (this.proxyUrl ? "proxy" : "")
 
     if (this.provider === "openai") {
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -60,6 +62,10 @@ export class FlightReader extends LitElement {
 
     // eslint-disable-next-line @typescript-eslint/no-explicit-any
     return createGeminiChat(model as any, key, this.proxyUrl ? { httpOptions: { baseUrl: this.proxyUrl } } : undefined)
+  }
+
+  private _subscriptionEndpoint(): string {
+    return this.subscriptionUrl || this.proxyUrl
   }
 
   private async _process(file: File) {
@@ -74,12 +80,9 @@ export class FlightReader extends LitElement {
 
     try {
       const base64 = await this._toBase64(file)
-      const adapter = this._buildAdapter()
-      const itineraries: FlightItinerary[] = await analyzeFlightImage(
-        base64,
-        file.type,
-        adapter,
-      )
+      const itineraries: FlightItinerary[] = this.provider === "subscription"
+        ? await this._analyzeWithSubscription(base64, file.type)
+        : await analyzeFlightImage(base64, file.type, this._buildAdapter())
 
       this._count = itineraries.length
       this._status = "done"
@@ -102,6 +105,16 @@ export class FlightReader extends LitElement {
       }
       this._status = "error"
     }
+  }
+
+  private async _analyzeWithSubscription(base64: string, mimeType: string): Promise<FlightItinerary[]> {
+    const endpoint = this._subscriptionEndpoint()
+    if (!endpoint) {
+      throw new Error("Set subscription-url to the subscription-llm /v1/chat/completions endpoint")
+    }
+
+    // An omitted model lets a ChatGPT-backed Codex account select its default.
+    return analyzeSubscriptionFlightImage(base64, mimeType, endpoint, this.apiKey, this.model || undefined)
   }
 
   private _toBase64(file: File): Promise<string> {

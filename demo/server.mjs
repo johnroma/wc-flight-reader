@@ -47,6 +47,8 @@ const GEMINI_KEY = env.GEMINI_API_KEY || ""
 const OPENAI_KEY = env.OPENAI_API_KEY || ""
 const GEMINI_MODEL = env.GEMINI_MODEL || ""
 const OPENAI_MODEL = env.OPENAI_MODEL || ""
+const SUBSCRIPTION_LLM_URL = env.SUBSCRIPTION_LLM_URL || ""
+const SUBSCRIPTION_LLM_TOKEN = env.SUBSCRIPTION_LLM_TOKEN || ""
 const PORT = parseInt(process.env.PORT || "3456", 10)
 
 // --- MIME types ---
@@ -73,6 +75,8 @@ function serveIndex(res) {
     window.__DEMO_OPENAI_KEY__ = ${JSON.stringify(OPENAI_KEY)};
     window.__DEMO_GEMINI_MODEL__ = ${JSON.stringify(GEMINI_MODEL)};
     window.__DEMO_OPENAI_MODEL__ = ${JSON.stringify(OPENAI_MODEL)};
+    window.__DEMO_SUBSCRIPTION_LLM_URL__ = ${JSON.stringify(SUBSCRIPTION_LLM_URL)};
+    window.__DEMO_SUBSCRIPTION_LLM_TOKEN__ = ${JSON.stringify(SUBSCRIPTION_LLM_TOKEN)};
   </script>`
   const html = template.replace("</head>", `${config}\n  </head>`)
   res.writeHead(200, { "Content-Type": "text/html; charset=utf-8" })
