@@ -63,12 +63,18 @@
       <select id="provider">
         <option value="gemini">Gemini</option>
         <option value="openai">OpenAI</option>
+        <option value="subscription">Codex subscription</option>
       </select>
     </div>
 
     <div class="section key-row">
-      <label for="apikey">API Key <span id="key-badge" class="badge badge-env">.env</span></label>
+      <label for="apikey"><span id="key-label">API Key</span> <span id="key-badge" class="badge badge-env">.env</span></label>
       <input type="text" id="apikey" placeholder="Overriding key…" autocomplete="off" />
+    </div>
+
+    <div class="section" id="subscription-config" hidden>
+      <label for="subscription-url">subscription-llm URL</label>
+      <input type="text" id="subscription-url" placeholder="http://127.0.0.1:8789/v1/chat/completions" autocomplete="off" />
     </div>
 
     <flight-reader id="reader" provider="gemini"></flight-reader>
@@ -85,29 +91,36 @@
       const apikeyInput = document.getElementById("apikey")
       const keyBadge = document.getElementById("key-badge")
 
-      // Key injected server-side from .env
-      const envKey = window.__DEMO_KEY__ || ""
+      const keyLabel = document.getElementById("key-label")
+      const subscriptionConfig = document.getElementById("subscription-config")
+      const subscriptionUrlInput = document.getElementById("subscription-url")
+      const geminiKey = window.__DEMO_KEY__ || ""
+      const openaiKey = window.__DEMO_OPENAI_KEY__ || ""
+      const subscriptionUrl = window.__DEMO_SUBSCRIPTION_LLM_URL__ || ""
+      const subscriptionToken = window.__DEMO_SUBSCRIPTION_LLM_TOKEN__ || ""
 
-      if (envKey) {
-        reader.apiKey = envKey
-        reader.geminiModel = window.__DEMO_GEMINI_MODEL__ || "gemini-3.1-flash-lite"
-        reader.openaiModel = window.__DEMO_OPENAI_MODEL__ || "gpt-5-nano"
-      } else {
-        keyBadge.textContent = "manual"
-        keyBadge.className = "badge badge-manual"
-        apikeyInput.placeholder = "Paste your API key…"
+      reader.geminiModel = window.__DEMO_GEMINI_MODEL__ || "gemini-3.1-flash-lite"
+      reader.openaiModel = window.__DEMO_OPENAI_MODEL__ || "gpt-5-nano"
+      subscriptionUrlInput.value = subscriptionUrl
+
+      function applyProvider() {
+        const provider = providerSelect.value
+        const isSubscription = provider === "subscription"
+        const envKey = isSubscription ? subscriptionToken : provider === "openai" ? openaiKey : geminiKey
+        reader.provider = provider
+        reader.subscriptionUrl = isSubscription ? subscriptionUrlInput.value.trim() : ""
+        reader.apiKey = apikeyInput.value.trim() || envKey
+        subscriptionConfig.hidden = !isSubscription
+        keyLabel.textContent = isSubscription ? "Service token" : "API Key"
+        keyBadge.textContent = apikeyInput.value.trim() ? "manual" : envKey ? ".env" : "manual"
+        keyBadge.className = "badge " + (apikeyInput.value.trim() || !envKey ? "badge-manual" : "badge-env")
+        apikeyInput.placeholder = isSubscription ? "Optional Bearer token…" : "Paste your API key…"
       }
 
-      providerSelect.addEventListener("change", () => {
-        reader.provider = providerSelect.value
-      })
-
-      apikeyInput.addEventListener("input", () => {
-        const v = apikeyInput.value.trim()
-        reader.apiKey = v || envKey
-        keyBadge.textContent = v ? "manual" : ".env"
-        keyBadge.className = "badge " + (v ? "badge-manual" : "badge-env")
-      })
+      providerSelect.addEventListener("change", applyProvider)
+      subscriptionUrlInput.addEventListener("input", applyProvider)
+      apikeyInput.addEventListener("input", applyProvider)
+      applyProvider()
 
       reader.addEventListener("flight-data", (e) => {
         output.textContent = JSON.stringify(e.detail, null, 2)

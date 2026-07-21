@@ -53,12 +53,13 @@ useEffect(() => {
 
 | Property      | Attribute      | Type                    | Default                  | Description                                                      |
 |---------------|----------------|------------------------|--------------------------|------------------------------------------------------------------|
-| `provider`    | `provider`     | `"gemini" \| "openai"` | `"gemini"`               | Which AI provider to use                                         |
-| `apiKey`      | —              | `string`               | `""`                     | API key — set as a JS property, not an HTML attribute            |
-| `geminiModel` | `gemini-model` | `string`               | `"gemini-3.1-flash-lite"` | Gemini model to use                                             |
-| `openaiModel` | `openai-model` | `string`               | `"gpt-5-nano"`           | OpenAI model to use                                              |
-| `model`       | `model`        | `string`               | `""`                     | Override both provider models at once (takes precedence)         |
-| `proxyUrl`    | `proxy-url`    | `string`               | `""`                     | Optional base URL for proxying AI requests                       |
+| `provider`    | `provider`     | `"gemini" \| "openai" \| "subscription"` | `"gemini"` | AI transport to use |
+| `apiKey`      | —              | `string`               | `""`                     | Provider API key, or optional subscription service Bearer token; set as a JS property |
+| `geminiModel` | `gemini-model` | `string`               | `"gemini-3.1-flash-lite"` | Gemini model to use |
+| `openaiModel` | `openai-model` | `string`               | `"gpt-5-nano"`           | OpenAI model to use |
+| `model`       | `model`        | `string`               | `""`                     | Provider model override. Leave empty for Codex/ChatGPT automatic selection. |
+| `proxyUrl`    | `proxy-url`    | `string`               | `""`                     | Existing Gemini/OpenAI SDK proxy base URL. Also an alias for `subscriptionUrl`. |
+| `subscriptionUrl` | `subscription-url` | `string` | `""` | `subscription-llm` `/v1/chat/completions` endpoint; required for `provider="subscription"`. |
 
 > **Note:** `apiKey` is intentionally not reflected as an HTML attribute to avoid it appearing in the DOM. Always set it via JavaScript: `el.apiKey = key`.
 
@@ -82,7 +83,8 @@ el.addEventListener('flight-data', (e: CustomEvent<FlightItinerary[]>) => {
 interface FlightItinerary {
   price: number | null      // total price shown in the screenshot
   currency: string | null   // ISO 4217 code e.g. "USD", "SEK"
-  segments: FlightSegment[]
+  outbound: FlightSegment[] // outgoing legs, in departure order
+  inbound: FlightSegment[] | null // return legs, or null for one-way
 }
 
 interface FlightSegment {
@@ -123,16 +125,29 @@ el.apiKey = 'AIza...'
 
 ### OpenAI
 
-Uses `gpt-4o-mini`. Get a key at [platform.openai.com](https://platform.openai.com).
+Uses `gpt-5-nano` by default. Get a key at [platform.openai.com](https://platform.openai.com).
 
 ```js
 el.provider = 'openai'
 el.apiKey = 'sk-...'
 ```
 
+### Codex subscription
+
+Use a locally running [`subscription-llm`](https://github.com/johnroma/subscription-llm) service. The component uses its vision + structured-output contract directly; it does not expose a Codex or OpenAI key in the browser.
+
+```js
+el.provider = 'subscription'
+el.subscriptionUrl = 'http://127.0.0.1:8789/v1/chat/completions'
+// Only set this when SUBSCRIPTION_LLM_TOKEN is configured on the service:
+// el.apiKey = 'local-service-token'
+```
+
+Leave `model` unset for a ChatGPT-backed Codex account, which selects its own supported model.
+
 ## Security
 
-API keys are used directly from the browser. For production, set `proxy-url` to route requests through your own backend so keys are never exposed to the client.
+Gemini and OpenAI API keys are used directly from the browser. For production, route them through your own backend. `subscription-llm` should remain loopback-only unless you configure its Bearer token and network exposure deliberately.
 
 ## License
 
