@@ -40,7 +40,9 @@
     "dev": "vite",
     "build": "tsc && vite build",
     "preview": "vite preview",
-    "demo": "node demo/server.mjs"
+    "demo": "node demo/server.mjs",
+    "test": "vitest run",
+    "test:watch": "vitest"
   },
   "devDependencies": {
     "@tanstack/ai": "^0.21.3",
@@ -49,9 +51,11 @@
     "@tanstack/ai-gemini": "^0.10.10",
     "@tanstack/ai-isolate-quickjs": "^0.1.20",
     "@tanstack/ai-openai": "^0.10.0",
+    "jsdom": "^29.1.1",
     "lit": "^3.3.3",
     "typescript": "^6.0.3",
     "vite": "^8.0.14",
+    "vitest": "^4.1.10",
     "zod": "^4.4.3"
   },
   "peerDependencies": {
