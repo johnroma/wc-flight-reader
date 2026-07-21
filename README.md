@@ -149,6 +149,14 @@ Leave `model` unset for a ChatGPT-backed Codex account, which selects its own su
 
 Gemini and OpenAI API keys are used directly from the browser. For production, route them through your own backend. `subscription-llm` should remain loopback-only unless you configure its Bearer token and network exposure deliberately.
 
+## Testing
+
+```bash
+npm test
+```
+
+The suite covers direct-provider request construction, the subscription service contract, service error handling, return-trip normalization, unsupported-provider rejection, and clipboard image routing.
+
 ## License
 
 MIT

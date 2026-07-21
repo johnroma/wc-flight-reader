@@ -5,7 +5,8 @@ import { createOpenaiChat } from "@tanstack/ai-openai"
 import { analyzeFlightImage, analyzeSubscriptionFlightImage } from "./analyze.js"
 import type { FlightItinerary } from "./schema.js"
 
-type Provider = "gemini" | "openai" | "subscription"
+const PROVIDERS = ["gemini", "openai", "subscription"] as const
+type Provider = (typeof PROVIDERS)[number]
 type Status = "idle" | "loading" | "done" | "error"
 
 const DEFAULT_MODELS: Record<Exclude<Provider, "subscription">, string> = {
@@ -60,8 +61,12 @@ export class FlightReader extends LitElement {
       return createOpenaiChat(model as any, key, { dangerouslyAllowBrowser: true, ...(this.proxyUrl ? { baseURL: this.proxyUrl } : {}) })
     }
 
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    return createGeminiChat(model as any, key, this.proxyUrl ? { httpOptions: { baseUrl: this.proxyUrl } } : undefined)
+    if (this.provider === "gemini") {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      return createGeminiChat(model as any, key, this.proxyUrl ? { httpOptions: { baseUrl: this.proxyUrl } } : undefined)
+    }
+
+    throw new Error(`Unsupported provider: ${this.provider}`)
   }
 
   private _subscriptionEndpoint(): string {
@@ -69,6 +74,12 @@ export class FlightReader extends LitElement {
   }
 
   private async _process(file: File) {
+    if (!PROVIDERS.includes(this.provider)) {
+      this._error = `Unsupported provider: ${this.provider}`
+      this._status = "error"
+      return
+    }
+
     if (!ACCEPTED_MIME_TYPES.includes(file.type)) {
       this._error = `Unsupported format: ${file.type}. Use PNG, JPEG or WEBP.`
       this._status = "error"
