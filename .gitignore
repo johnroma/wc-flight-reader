@@ -2,3 +2,8 @@ node_modules
 dist
 types
 .env
+.DS_Store
+
+# Local Understand Anything analysis artifacts
+.ua/
+schema.json
