@@ -118,6 +118,13 @@ function validateRoundTrip(itinerary: FlightItinerary): FlightItinerary {
     return { ...itinerary, inbound: null }
   }
 
+  // A lone "Return"-labelled card (e.g. only the homeward leg is visible) makes
+  // the model file the legs under inbound with an empty outbound array. There is
+  // no round-trip to validate — promote the legs to outbound so they survive.
+  if (itinerary.outbound.length === 0) {
+    return { ...itinerary, outbound: itinerary.inbound, inbound: null }
+  }
+
   const firstOutboundOrigin = itinerary.outbound[0]?.origin
   const lastInboundDestination = itinerary.inbound[itinerary.inbound.length - 1]?.destination
 

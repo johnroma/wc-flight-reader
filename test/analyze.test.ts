@@ -109,6 +109,33 @@ describe("analyzeSubscriptionFlightImage", () => {
     expect(invalid[0]?.inbound).toBeNull()
   })
 
+  it("promotes inbound-only legs to outbound when the card shows a lone return leg", async () => {
+    // Regression: a "Return · Sat, Sep 26" Ryanair card made the model file the
+    // only visible leg under inbound with an empty outbound array, and the
+    // round-trip validator silently discarded it (empty result in the UI).
+    const returnLeg = {
+      flightNumber: "FR1463",
+      origin: "STN",
+      destination: "ARN",
+      departureAt: "2026-09-26T20:55:00",
+      arrivalAt: "2026-09-27T00:15:00",
+    }
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(
+        completion({
+          itineraries: [
+            itinerary({ outbound: [], inbound: [returnLeg] }),
+          ],
+        }),
+      )
+    vi.stubGlobal("fetch", fetchMock)
+
+    const result = await analyzeSubscriptionFlightImage("x", "image/png", "https://service", "")
+
+    expect(result).toEqual([itinerary({ outbound: [returnLeg], inbound: null })])
+  })
+
   it("uses a structured service error and has a safe fallback for non-JSON errors", async () => {
     const fetchMock = vi
       .fn()
