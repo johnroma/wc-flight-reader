@@ -7,3 +7,6 @@ types
 # Local Understand Anything analysis artifacts
 .ua/
 schema.json
+
+# Machine-local Claude Code permissions (keep shared .claude files tracked).
+/.claude/settings.local.json
